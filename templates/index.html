@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpout - AI Quiz Generator</title>
+    <meta name="description" content="Generate instant, AI-powered interactive quizzes on any topic. Track your high scores and view in-depth explanations.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- App Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Background Glows -->
+    <div class="glow-bg glow-purple"></div>
+    <div class="glow-bg glow-cyan"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="main-header animate-fade-in">
+            <div class="logo">
+                <i class="fa-solid fa-brain-circuit brain-icon"></i>
+                <span class="logo-text">Mind<span>Spout</span></span>
+            </div>
+            <p class="tagline">Ignite your curiosity with AI-powered personalized quizzes</p>
+        </header>
+
+        <!-- Topic Card -->
+        <main class="main-content">
+            <div class="quiz-card glassmorphic-card animate-slide-up">
+                <div class="card-glow"></div>
+                
+                <h1 class="card-title">Choose Your Challenge</h1>
+                <p class="card-subtitle">Input any topic in the world, and our AI will draft a custom quiz for you.</p>
+
+                <form id="quiz-generation-form" class="generation-form">
+                    <div class="input-group">
+                        <label for="quiz-topic"><i class="fa-solid fa-tag icon"></i> Topic</label>
+                        <input type="text" id="quiz-topic" placeholder="e.g. Quantum Physics, World War II, Python OOP..." required autocomplete="off">
+                    </div>
+
+                    <!-- Quick Suggestions -->
+                    <div class="suggestions-group">
+                        <span class="suggestions-label">Popular Topics:</span>
+                        <div class="suggestions-container">
+                            <span class="topic-tag" data-topic="World History">World History</span>
+                            <span class="topic-tag" data-topic="Space Exploration">Space Exploration</span>
+                            <span class="topic-tag" data-topic="Python Basics">Python Basics</span>
+                            <span class="topic-tag" data-topic="Modern Art">Modern Art</span>
+                        </div>
+                    </div>
+
+                    <div class="config-row">
+                        <div class="config-column">
+                            <label><i class="fa-solid fa-list-ol icon"></i> Questions Count</label>
+                            <div class="qty-selector">
+                                <label class="qty-radio">
+                                    <input type="radio" name="num_questions" value="5" checked>
+                                    <span class="qty-box">5</span>
+                                </label>
+                                <label class="qty-radio">
+                                    <input type="radio" name="num_questions" value="10">
+                                    <span class="qty-box">10</span>
+                                </label>
+                                <label class="qty-radio">
+                                    <input type="radio" name="num_questions" value="15">
+                                    <span class="qty-box">15</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="generate-btn" class="btn btn-primary btn-glowing">
+                        <span class="btn-text">Generate Quiz</span>
+                        <div class="btn-loader hidden">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i>
+                        </div>
+                    </button>
+                </form>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="main-footer animate-fade-in">
+            <p>Powered by Llama-3.3-70b-versatile via Groq</p>
+        </footer>
+    </div>
+
+    <!-- AI Generation Overlay Screen -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loader-visual">
+                <div class="spinner-ring ring-outer"></div>
+                <div class="spinner-ring ring-inner"></div>
+                <i class="fa-solid fa-atom loader-icon animate-pulse"></i>
+            </div>
+            <h2 class="loading-title">Drafting Questions...</h2>
+            <p class="loading-desc">Our AI is designing a bespoke quiz on your topic. Grab a refreshment!</p>
+            <div class="loading-status-bar"><div class="loading-status-progress"></div></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpout - Interactive Quiz</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- App Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="glow-bg glow-purple"></div>
+    <div class="glow-bg glow-cyan"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="main-header animate-fade-in">
+            <div class="logo">
+                <i class="fa-solid fa-brain-circuit brain-icon"></i>
+                <span class="logo-text" id="quiz-header-title">Mind<span>Spout</span></span>
+            </div>
+        </header>
+
+        <!-- Quiz Container -->
+        <main class="main-content">
+            <div class="quiz-card glassmorphic-card animate-slide-up" id="quiz-card-box">
+                <div class="card-glow"></div>
+                
+                <div class="quiz-header">
+                    <span class="question-counter" id="question-counter">Question 1 of 5</span>
+                    <span class="quiz-timer" id="quiz-timer"><i class="fa-solid fa-clock"></i> <span id="timer-val">00:00</span></span>
+                </div>
+
+                <!-- Linear Progress Bar -->
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+
+                <!-- Question Screen -->
+                <div id="question-block" class="animate-fade-in">
+                    <h2 class="question-text" id="question-text">Loading question text...</h2>
+                    
+                    <div class="options-container" id="options-container">
+                        <!-- Options will render dynamically -->
+                    </div>
+                </div>
+
+                <!-- Footer Nav buttons -->
+                <div class="quiz-footer">
+                    <button id="prev-btn" class="btn btn-secondary hidden"><i class="fa-solid fa-arrow-left"></i> Previous</button>
+                    <button id="next-btn" class="btn btn-primary btn-glowing" disabled>Next <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <p>Powered by Llama-3.3-70b-versatile via Groq</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+</body>
+</html>

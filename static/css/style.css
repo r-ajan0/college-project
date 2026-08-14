@@ -1,0 +1,992 @@
+/* -------------------------------------------------------------
+ * Theme variables & Universal reset
+ * ------------------------------------------------------------- */
+:root {
+    --bg-darkest: #070913;
+    --bg-dark: #0d1223;
+    --bg-card: rgba(17, 25, 46, 0.55);
+    --border-card: rgba(255, 255, 255, 0.08);
+    
+    --color-primary: #a855f7;  /* Neon Purple */
+    --color-secondary: #06b6d4; /* Neon Cyan */
+    --color-rose: #f43f5e;      /* Accent Rose */
+    --color-green: #10b981;     /* Correct green */
+    
+    --text-primary: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dark: #1e293b;
+    
+    --font-primary: 'Plus Jakarta Sans', sans-serif;
+    --font-header: 'Space Grotesk', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-darkest);
+    color: var(--text-primary);
+    font-family: var(--font-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* -------------------------------------------------------------
+ * Ambient Glowing Backgrounds
+ * ------------------------------------------------------------- */
+.glow-bg {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(140px);
+    z-index: 0;
+    opacity: 0.18;
+    pointer-events: none;
+    transition: all 1s ease-in-out;
+}
+
+.glow-purple {
+    background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
+    top: -100px;
+    left: -100px;
+}
+
+.glow-cyan {
+    background: radial-gradient(circle, var(--color-secondary) 0%, transparent 70%);
+    bottom: -150px;
+    right: -100px;
+}
+
+/* -------------------------------------------------------------
+ * Global Layout Container
+ * ------------------------------------------------------------- */
+.app-container {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: space-between;
+}
+
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2rem 0;
+}
+
+/* -------------------------------------------------------------
+ * Header Styling
+ * ------------------------------------------------------------- */
+.main-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-header);
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+}
+
+.brain-icon {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.4));
+}
+
+.logo-text span {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tagline {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    font-weight: 300;
+}
+
+/* -------------------------------------------------------------
+ * Glassmorphism Card Element
+ * ------------------------------------------------------------- */
+.glassmorphic-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 24px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 2.5rem;
+    width: 100%;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+                0 0 40px rgba(168, 85, 247, 0.03);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glassmorphic-card:hover {
+    box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.6), 
+                0 0 50px rgba(168, 85, 247, 0.08);
+}
+
+.card-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+}
+
+.card-title {
+    font-family: var(--font-header);
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.card-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* -------------------------------------------------------------
+ * Form and Inputs
+ * ------------------------------------------------------------- */
+.generation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.input-group label i {
+    color: var(--color-secondary);
+}
+
+.input-group input[type="text"] {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-card);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    color: var(--text-primary);
+    font-family: var(--font-primary);
+    font-size: 1rem;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.input-group input[type="text"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2),
+                inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* -------------------------------------------------------------
+ * Suggestion Tags
+ * ------------------------------------------------------------- */
+.suggestions-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.suggestions-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.suggestions-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.topic-tag {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.topic-tag:hover {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: var(--color-primary);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+/* -------------------------------------------------------------
+ * Quantity Selector (Radio Box Grid)
+ * ------------------------------------------------------------- */
+.config-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.config-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.config-column label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.config-column label i {
+    color: var(--color-primary);
+}
+
+.qty-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.qty-radio input[type="radio"] {
+    display: none;
+}
+
+.qty-box {
+    display: block;
+    text-align: center;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-card);
+    border-radius: 12px;
+    padding: 0.85rem 0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.qty-radio input[type="radio"]:checked + .qty-box {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(6, 182, 212, 0.25));
+    border-color: var(--color-primary);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.15);
+    color: #fff;
+}
+
+.qty-box:hover {
+    border-color: rgba(168, 85, 247, 0.4);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* -------------------------------------------------------------
+ * Premium Buttons
+ * ------------------------------------------------------------- */
+.btn {
+    font-family: var(--font-primary);
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 1.1rem 2rem;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: #fff;
+}
+
+.btn-glowing {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.35);
+}
+
+.btn-glowing:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+}
+
+.btn-glowing:active {
+    transform: translateY(1px);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-card);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn-loader {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* -------------------------------------------------------------
+ * Interactive Quiz Page Specific Styles
+ * ------------------------------------------------------------- */
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.question-counter {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-card);
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+}
+
+.quiz-timer {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Dynamic Linear Progress Bar */
+.progress-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    border-radius: 10px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Active Question Area */
+.question-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+}
+
+/* Options Grid layout */
+.options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.option-btn {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1.5px solid var(--border-card);
+    border-radius: 14px;
+    padding: 1.1rem 1.5rem;
+    font-family: var(--font-primary);
+    font-size: 1rem;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    position: relative;
+    outline: none;
+}
+
+.option-badge {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-card);
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.option-text {
+    flex-grow: 1;
+}
+
+.option-btn:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(168, 85, 247, 0.35);
+    transform: translateX(4px);
+}
+
+.option-btn:hover .option-badge {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: rgba(168, 85, 247, 0.1);
+}
+
+/* Active/Selected State of Options */
+.option-btn.selected {
+    background: rgba(168, 85, 247, 0.12);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.1);
+}
+
+.option-btn.selected .option-badge {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+/* Correct and Incorrect Options (Results / Verification style) */
+.option-btn.correct {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-color: var(--color-green) !important;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+}
+
+.option-btn.correct .option-badge {
+    background: var(--color-green) !important;
+    border-color: var(--color-green) !important;
+    color: #fff !important;
+}
+
+.option-btn.incorrect {
+    background: rgba(244, 63, 94, 0.12) !important;
+    border-color: var(--color-rose) !important;
+}
+
+.option-btn.incorrect .option-badge {
+    background: var(--color-rose) !important;
+    border-color: var(--color-rose) !important;
+    color: #fff !important;
+}
+
+/* Quiz Page Navigation Buttons */
+.quiz-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quiz-footer button {
+    flex: 1;
+}
+
+/* -------------------------------------------------------------
+ * Results Dashboard Screen
+ * ------------------------------------------------------------- */
+.results-dashboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Score radial indicator */
+.score-circle-container {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin-bottom: 1.5rem;
+}
+
+.score-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.score-svg-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.03);
+    stroke-width: 12;
+}
+
+.score-svg-bar {
+    fill: none;
+    stroke: url(#score-gradient);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 502; /* 2 * PI * r = 2 * 3.14 * 80 */
+    stroke-dashoffset: 502; /* 502 means 0% progress */
+    transition: stroke-dashoffset 1.8s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.score-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.score-percentage {
+    display: block;
+    font-family: var(--font-header);
+    font-size: 2.75rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+}
+
+.score-fraction {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.evaluation-banner {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.evaluation-title {
+    font-family: var(--font-header);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.evaluation-desc {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+/* Detailed review list styling */
+.review-section {
+    width: 100%;
+    margin-bottom: 2.5rem;
+}
+
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-divider span {
+    font-family: var(--font-header);
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.section-divider::after {
+    content: '';
+    flex-grow: 1;
+    height: 1px;
+    background: var(--border-card);
+}
+
+.review-item {
+    background: rgba(15, 23, 42, 0.3);
+    border: 1px solid var(--border-card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.25s ease;
+}
+
+.review-item.is-correct {
+    border-left: 4px solid var(--color-green);
+}
+
+.review-item.is-incorrect {
+    border-left: 4px solid var(--color-rose);
+}
+
+.review-question-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.review-question-num {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-secondary);
+}
+
+.review-status-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.review-status-badge.correct-badge {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-green);
+}
+
+.review-status-badge.incorrect-badge {
+    background: rgba(244, 63, 94, 0.1);
+    color: var(--color-rose);
+}
+
+.review-question-text {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+}
+
+.review-answers-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.review-answer-block {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.review-answer-block strong {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 0.25rem;
+}
+
+.review-answer-block.user-choice-correct {
+    border-color: rgba(16, 185, 129, 0.4);
+    color: var(--color-green);
+}
+
+.review-answer-block.user-choice-incorrect {
+    border-color: rgba(244, 63, 94, 0.4);
+    color: var(--color-rose);
+}
+
+.review-answer-block.correct-choice {
+    border-color: rgba(16, 185, 129, 0.4);
+    color: var(--color-green);
+}
+
+/* Explanation block */
+.explanation-box {
+    background: rgba(6, 182, 212, 0.04);
+    border: 1px dashed rgba(6, 182, 212, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.explanation-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* -------------------------------------------------------------
+ * Full Screen AI Loading Overlay
+ * ------------------------------------------------------------- */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(7, 9, 19, 0.95);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-content {
+    text-align: center;
+    max-width: 480px;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loader-visual {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin-bottom: 2rem;
+}
+
+.spinner-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid transparent;
+}
+
+.ring-outer {
+    width: 100%;
+    height: 100%;
+    border-top-color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    animation: spin 2s linear infinite;
+}
+
+.ring-inner {
+    top: 15px;
+    left: 15px;
+    width: 110px;
+    height: 110px;
+    border-left-color: var(--color-secondary);
+    border-right-color: var(--color-secondary);
+    animation: spin-reverse 1.5s linear infinite;
+}
+
+.loader-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.25rem;
+    color: #fff;
+    filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.6));
+}
+
+.loading-title {
+    font-family: var(--font-header);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+}
+
+.loading-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.loading-status-bar {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.loading-status-progress {
+    height: 100%;
+    width: 25%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    animation: loading-bar 3s infinite ease-out;
+}
+
+/* -------------------------------------------------------------
+ * General CSS Animations Keyframes
+ * ------------------------------------------------------------- */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+}
+
+@keyframes loading-bar {
+    0% { width: 0%; transform: translateX(0); }
+    50% { width: 60%; }
+    100% { width: 0%; transform: translateX(200px); }
+}
+
+@keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; filter: drop-shadow(0 0 18px rgba(6, 182, 212, 0.8)); }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite ease-in-out;
+}
+
+/* Entrance Animations */
+.animate-fade-in {
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards;
+}
+
+.animate-slide-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation utilities for JS control */
+.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* -------------------------------------------------------------
+ * Footers
+ * ------------------------------------------------------------- */
+.main-footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.25);
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+/* -------------------------------------------------------------
+ * Responsive Layout Adaptations
+ * ------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .glassmorphic-card {
+        padding: 1.75rem;
+    }
+    
+    .logo {
+        font-size: 1.75rem;
+    }
+    
+    .brain-icon {
+        font-size: 2rem;
+    }
+    
+    .card-title {
+        font-size: 1.5rem;
+    }
+    
+    .qty-selector {
+        grid-template-columns: 1fr;
+    }
+    
+    .quiz-timer {
+        font-size: 0.8rem;
+    }
+    
+    .option-btn {
+        padding: 0.9rem 1.2rem;
+        font-size: 0.95rem;
+    }
+}

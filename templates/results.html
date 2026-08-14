@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpout - Quiz Results</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <!-- App Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="glow-bg glow-purple"></div>
+    <div class="glow-bg glow-cyan"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="main-header animate-fade-in">
+            <div class="logo">
+                <i class="fa-solid fa-brain-circuit brain-icon"></i>
+                <span class="logo-text">Mind<span>Spout</span></span>
+            </div>
+        </header>
+
+        <!-- Results dashboard -->
+        <main class="main-content">
+            <div class="quiz-card glassmorphic-card animate-slide-up" style="max-height: 80vh; overflow-y: auto; padding-right: 1.5rem;">
+                <div class="card-glow"></div>
+                
+                <div class="results-dashboard">
+                    <!-- Score Dial SVG -->
+                    <div class="score-circle-container">
+                        <svg class="score-svg">
+                            <defs>
+                                <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="var(--color-primary)" />
+                                    <stop offset="100%" stop-color="var(--color-secondary)" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="score-svg-bg" cx="90" cy="90" r="80" />
+                            <circle class="score-svg-bar" id="score-svg-bar" cx="90" cy="90" r="80" />
+                        </svg>
+                        <div class="score-content">
+                            <span class="score-percentage" id="score-percentage">0%</span>
+                            <span class="score-fraction" id="score-fraction">0/0</span>
+                        </div>
+                    </div>
+
+                    <div class="evaluation-banner">
+                        <h1 class="evaluation-title" id="evaluation-title">Calculating...</h1>
+                        <p class="evaluation-desc" id="evaluation-desc">Analyzing your performance based on AI analytics.</p>
+                    </div>
+
+                    <!-- Review Section -->
+                    <div class="review-section">
+                        <div class="section-divider">
+                            <span>Question Breakdowns & AI Explanations</span>
+                        </div>
+                        <div id="review-container">
+                            <!-- Injected review items -->
+                        </div>
+                    </div>
+
+                    <!-- Results Action Items Buttons -->
+                    <div class="quiz-footer" style="width: 100%;">
+                        <button id="restart-btn" class="btn btn-primary btn-glowing"><i class="fa-solid fa-rotate-left"></i> Take Another Quiz</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <p>Powered by Llama-3.3-70b-versatile via Groq</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+</body>
+</html>

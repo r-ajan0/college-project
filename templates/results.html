@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpout - Results</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container animate-slide-up">
+
+        <!-- Header -->
+        <header class="app-header">
+            <button class="header-btn" onclick="sessionStorage.removeItem('current_quiz'); sessionStorage.removeItem('quiz_results'); window.location.href='/'">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="header-title">Results</div>
+            <div class="header-btn" style="visibility: hidden;"></div>
+        </header>
+
+        <!-- Scrollable Results Dashboard -->
+        <main class="main-content">
+            <div class="results-dashboard animate-fade-in">
+
+                <!-- Radial Score Gauge -->
+                <div class="score-circle-container">
+                    <svg class="score-svg" viewBox="0 0 180 180">
+                        <defs>
+                            <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#ffd73a"/>
+                                <stop offset="100%" stop-color="#ffffff"/>
+                            </linearGradient>
+                        </defs>
+                        <circle class="score-svg-bg" cx="90" cy="90" r="80"/>
+                        <circle class="score-svg-bar" id="score-svg-bar" cx="90" cy="90" r="80"/>
+                    </svg>
+                    <div class="score-content">
+                        <span class="score-percentage" id="score-percentage">0%</span>
+                        <span class="score-fraction" id="score-fraction">0 / 0</span>
+                    </div>
+                </div>
+
+                <!-- Evaluation Title -->
+                <div class="evaluation-banner">
+                    <h1 class="evaluation-title" id="evaluation-title">Calculating...</h1>
+                    <p class="evaluation-desc" id="evaluation-desc">Analyzing your performance...</p>
+                </div>
+
+                <!-- Question Review Breakdown -->
+                <div class="review-section">
+                    <div class="section-divider">
+                        <span>Question Breakdown</span>
+                    </div>
+                    <div id="review-container">
+                        <!-- Injected by quiz.js -->
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- CTA Footer -->
+        <footer class="quiz-footer">
+            <button id="restart-btn" class="footer-btn-nav btn-nav-next" style="width: 100%; justify-content: center;">
+                <i class="fa-solid fa-rotate-left" style="margin-right: 0.5rem;"></i>
+                Take Another Quiz
+            </button>
+        </footer>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpout - AI Quiz Generator</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- App Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container animate-slide-up">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-btn" style="visibility: hidden;"><i class="fa-solid fa-chevron-left"></i></div>
+            <div class="header-title">MindSpout</div>
+            <div class="header-btn"><i class="fa-solid fa-circle-info"></i></div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="landing-visual">
+                <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="rgba(255, 255, 255, 0.08)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="2"/>
+                    <path d="M50 25C40 25 35 32 35 42C35 52 42 55 45 60C46 62 46 65 48 65H52C54 65 54 62 55 60C58 55 65 52 65 42C65 32 60 25 50 25Z" fill="white" opacity="0.95"/>
+                    <rect x="47" y="67" width="6" height="5" rx="1" fill="#ffd73a"/>
+                    <rect x="45" y="74" width="10" height="3" rx="1.5" fill="#ffd73a"/>
+                    <circle cx="50" cy="42" r="8" fill="#7c73e6"/>
+                    <path d="M50 38V46M46 42H54" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <h1 class="landing-title">Choose Your Challenge</h1>
+            <p class="landing-subtitle">Input any topic in the world, and our AI will draft a custom quiz for you.</p>
+
+            <form id="quiz-generation-form" class="generation-form">
+                <div class="input-group">
+                    <label for="quiz-topic"><i class="fa-solid fa-tag"></i> Topic</label>
+                    <input type="text" id="quiz-topic" placeholder="e.g. Space, World History, Python..." required autocomplete="off">
+                </div>
+
+                <!-- Suggestions -->
+                <div class="suggestions-group">
+                    <span class="suggestions-label">Popular Topics:</span>
+                    <div class="suggestions-container">
+                        <span class="topic-tag" data-topic="World History">World History</span>
+                        <span class="topic-tag" data-topic="Space Exploration">Space Exploration</span>
+                        <span class="topic-tag" data-topic="Python Basics">Python Basics</span>
+                        <span class="topic-tag" data-topic="Animals Name">Animals Name</span>
+                    </div>
+                </div>
+
+                <div class="config-row">
+                    <label class="config-label"><i class="fa-solid fa-list-ol"></i> Questions Count</label>
+                    <div class="qty-selector">
+                        <label class="qty-radio">
+                            <input type="radio" name="num_questions" value="5" checked>
+                            <span class="qty-box">5</span>
+                        </label>
+                        <label class="qty-radio">
+                            <input type="radio" name="num_questions" value="10">
+                            <span class="qty-box">10</span>
+                        </label>
+                        <label class="qty-radio">
+                            <input type="radio" name="num_questions" value="15">
+                            <span class="qty-box">15</span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </main>
+
+        <!-- Generate Action Button in Footer -->
+        <footer class="quiz-footer">
+            <button type="submit" form="quiz-generation-form" id="generate-btn" class="btn-nav-next" style="width: 100%; border-radius: 24px; padding: 1.1rem; font-weight: 700; border: none; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <span>Generate Quiz</span>
+                <i class="fa-solid fa-arrow-right" style="margin-left: 0.5rem;"></i>
+            </button>
+        </footer>
+    </div>
+
+    <!-- AI Generation Overlay Screen -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loader-visual">
+                <div class="spinner-ring ring-outer"></div>
+                <div class="spinner-ring ring-inner"></div>
+                <i class="fa-solid fa-atom loader-icon animate-pulse"></i>
+            </div>
+            <h2 class="loading-title">Drafting Questions...</h2>
+            <p class="loading-desc">Our AI is designing a bespoke quiz on your topic. Grab a refreshment!</p>
+            <div class="loading-status-bar"><div class="loading-status-progress"></div></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+</body>
+</html>

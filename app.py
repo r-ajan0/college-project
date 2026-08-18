@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import logging
 from flask import Flask, render_template, request, jsonify
@@ -22,6 +23,12 @@ client = Groq(api_key=api_key) if api_key else None
 if not client:
     logger.warning("GROQ_API_KEY is not defined in environment variables.")
 
+
+def strip_thinking_tags(text: str) -> str:
+    """Remove <think>...</think> reasoning blocks that some models emit."""
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -34,81 +41,106 @@ def quiz():
 def results():
     return render_template('results.html')
 
+
 @app.route('/generate_quiz', methods=['POST'])
 def generate_quiz():
     if not client:
-        return jsonify({"error": "Groq API Key is not configured. Please check your environment variables."}), 500
-        
+        return jsonify({"error": "Groq API Key is not configured."}), 500
+
     try:
         data = request.get_json() or {}
         topic = data.get("topic", "").strip()
         num_questions = int(data.get("num_questions", 5))
-        
+
         if not topic:
-            return jsonify({"error": "Topic cannot be empty. Please enter a valid topic."}), 400
-            
+            return jsonify({"error": "Topic cannot be empty."}), 400
+
         if num_questions < 1 or num_questions > 20:
             num_questions = 5
-            
-        prompt = f"""
-        You are a highly educational AI Quiz Generator.
-        Generate a quiz on the topic: "{topic}".
-        The quiz must contain exactly {num_questions} multiple-choice questions.
-        
-        Ensure that the quiz is interesting, accurate, and educational.
-        Each question option must be unique, and the options should be well-structured.
-        Provide a concise, helpful explanation explaining why the correct choice is indeed correct for each question.
-        
-        You MUST respond in JSON format matching the schema below:
-        {{
-          "title": "A short, engaging title for this quiz",
-          "questions": [
-            {{
-              "id": 1,
-              "question": "The question text, clear and concise.",
-              "options": ["Option A", "Option B", "Option C", "Option D"],
-              "answer": "Option A", 
-              "explanation": "This is a detailed explanation of why Option A is correct."
-            }}
-          ]
-        }}
-        Note: The 'answer' field must exactly match one of the items inside the 'options' array.
-        """
-        
-        # Call Groq API using JSON mode
+
+        # Explicit, example-driven prompt so the model follows the schema
+        prompt = f"""You are an expert educational quiz generator.
+
+Generate a multiple-choice quiz about: "{topic}"
+Number of questions: {num_questions}
+
+STRICT RULES:
+1. The "question" field must contain ONLY the question sentence — no options embedded inside it.
+2. The "options" field must be a JSON array of exactly 4 FULL answer strings (not just letters like "A", "B").
+3. The "answer" field must be copied exactly from one of the 4 options strings.
+4. The "clue" field must be a SHORT one-sentence hint that helps the user without revealing the answer directly.
+5. The "explanation" field must explain why the correct answer is right.
+6. Output ONLY valid JSON. No markdown, no extra text.
+
+Return this exact JSON structure:
+{{
+  "title": "Short engaging quiz title",
+  "questions": [
+    {{
+      "id": 1,
+      "question": "What is the capital of France?",
+      "options": ["Berlin", "Madrid", "Paris", "Rome"],
+      "answer": "Paris",
+      "clue": "This city is famous for the Eiffel Tower.",
+      "explanation": "Paris is the capital and largest city of France, situated on the River Seine."
+    }}
+  ]
+}}"""
+
         chat_completion = client.chat.completions.create(
             messages=[
                 {
-                    "role": "user",
-                    "content": prompt,
-                }
+                    "role": "system",
+                    "content": (
+                        "You are an expert quiz generator. "
+                        "You respond ONLY with valid JSON matching the schema the user provides. "
+                        "Never include markdown fences, explanations, or any text outside the JSON object."
+                    )
+                },
+                {"role": "user", "content": prompt}
             ],
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             response_format={"type": "json_object"},
-            temperature=0.7,
+            temperature=0.6,
         )
-        
-        response_content = chat_completion.choices[0].message.content
-        quiz_data = json.loads(response_content)
-        
-        # Basic validation of the response structure
+
+        raw = chat_completion.choices[0].message.content
+        # Strip any <think>…</think> blocks the model may emit
+        cleaned = strip_thinking_tags(raw)
+        quiz_data = json.loads(cleaned)
+
+        # Validate top-level keys
         if "title" not in quiz_data or "questions" not in quiz_data:
-            raise ValueError("Invalid quiz format returned by AI.")
-            
-        # Standardize questions ID and verify shapes
-        for index, q in enumerate(quiz_data["questions"]):
-            q["id"] = index + 1
-            if "options" not in q or "answer" not in q or "question" not in q or "explanation" not in q:
-                raise ValueError("Incomplete question object returned by AI.")
+            raise ValueError("AI returned an invalid quiz structure.")
+
+        # Validate and normalise each question
+        for i, q in enumerate(quiz_data["questions"]):
+            q["id"] = i + 1
+            for key in ("question", "options", "answer", "explanation"):
+                if key not in q:
+                    raise ValueError(f"Question {i+1} is missing the '{key}' field.")
+
+            # Make sure options are real strings, not single letters
+            if all(len(str(o).strip()) <= 1 for o in q["options"]):
+                raise ValueError(
+                    f"Question {i+1} options appear to be single letters. "
+                    "The model did not follow the schema."
+                )
+
+            # Ensure the answer is actually in the options list
             if q["answer"] not in q["options"]:
-                # Ensure the correct answer is indeed in options
                 q["options"].append(q["answer"])
-                    
+
+            # Add empty clue if the model skipped it
+            if "clue" not in q:
+                q["clue"] = "Think carefully about the topic before choosing."
+
         return jsonify(quiz_data)
-        
+
     except Exception as e:
-        logger.error(f"Error generating quiz: {str(e)}")
-        return jsonify({"error": f"Failed to generate quiz: {str(e)}"}), 500
+        logger.error(f"Error generating quiz: {e}")
+        return jsonify({"error": f"Failed to generate quiz: {e}"}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

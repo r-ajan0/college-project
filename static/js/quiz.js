@@ -2,10 +2,8 @@
 // MindSpout Quiz Client-Side State Engine
 // =============================================================
 
-// Paths mapping on load
 document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
-    
     if (path === '/quiz' || path.endsWith('/quiz')) {
         initQuiz();
     } else if (path === '/results' || path.endsWith('/results')) {
@@ -19,56 +17,50 @@ document.addEventListener('DOMContentLoaded', () => {
 // 1. Landing Screen Logic
 // -------------------------------------------------------------
 function initLanding() {
-    const tags = document.querySelectorAll('.topic-tag');
     const topicInput = document.getElementById('quiz-topic');
-    if (topicInput) {
-        tags.forEach(tag => {
-            tag.addEventListener('click', () => {
-                topicInput.value = tag.getAttribute('data-topic');
-                topicInput.focus();
-                // Play animation pulse on tag click
-                tag.style.transform = 'scale(0.95)';
-                setTimeout(() => tag.style.transform = '', 150);
-            });
+    const tags = document.querySelectorAll('.topic-tag');
+
+    tags.forEach(tag => {
+        tag.addEventListener('click', () => {
+            topicInput.value = tag.getAttribute('data-topic');
+            topicInput.focus();
+            tag.style.transform = 'scale(0.95)';
+            setTimeout(() => tag.style.transform = '', 150);
         });
-    }
+    });
 
     const form = document.getElementById('quiz-generation-form');
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const topic = topicInput.value.trim();
-            const questionCountRadio = document.querySelector('input[name="num_questions"]:checked');
-            const numQuestions = questionCountRadio ? parseInt(questionCountRadio.value) : 5;
+            const numQRadio = document.querySelector('input[name="num_questions"]:checked');
+            const numQuestions = numQRadio ? parseInt(numQRadio.value) : 5;
 
-            // Show Custom Loader Overlay
+            if (!topic) return;
+
             const overlay = document.getElementById('loading-overlay');
             if (overlay) overlay.classList.remove('hidden');
 
             try {
                 const response = await fetch('/generate_quiz', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ topic, num_questions: numQuestions })
                 });
 
                 if (!response.ok) {
                     const errData = await response.json();
-                    throw new Error(errData.error || 'Server returned error status');
+                    throw new Error(errData.error || 'Server returned an error');
                 }
 
                 const quizData = await response.json();
-                
-                // Save JSON object in Session storage for access
                 sessionStorage.setItem('current_quiz', JSON.stringify(quizData));
-                
-                // Navigate to quiz route
                 window.location.href = '/quiz';
+
             } catch (err) {
                 console.error(err);
-                alert(`Quiz Generation Failed: ${err.message}`);
+                alert(`Quiz Generation Failed:\n${err.message}`);
                 if (overlay) overlay.classList.add('hidden');
             }
         });
@@ -76,391 +68,289 @@ function initLanding() {
 }
 
 // -------------------------------------------------------------
-// 2. Interactive Quiz Engine State
+// 2. Interactive Quiz Engine
 // -------------------------------------------------------------
 let currentQuiz = null;
-let currentQuestionIndex = 0;
+let currentIndex = 0;
 let userAnswers = [];
 let timerInterval = null;
 let secondsElapsed = 0;
 
 function initQuiz() {
     const rawData = sessionStorage.getItem('current_quiz');
-    if (!rawData) {
-        window.location.href = '/';
-        return;
-    }
-    
+    if (!rawData) { window.location.href = '/'; return; }
+
     currentQuiz = JSON.parse(rawData);
-    if (!currentQuiz || !currentQuiz.questions || currentQuiz.questions.length === 0) {
-        window.location.href = '/';
-        return;
-    }
+    if (!currentQuiz?.questions?.length) { window.location.href = '/'; return; }
 
-    // Dynamic Title Header update
-    const headerTitle = document.getElementById('quiz-header-title');
-    if (headerTitle && currentQuiz.title) {
-        headerTitle.innerHTML = `Mind<span>Spout</span> <span style="font-size: 0.95rem; font-weight: 500; font-family: var(--font-primary); padding: 0.25rem 0.75rem; background: rgba(255,255,255,0.06); border-radius: 20px; margin-left: 0.75rem; border: 1px solid rgba(255,255,255,0.03); color: var(--color-secondary);">${currentQuiz.title}</span>`;
-    }
-
-    // Initialize answer arrays
     userAnswers = new Array(currentQuiz.questions.length).fill(null);
-    currentQuestionIndex = 0;
-    
+    currentIndex = 0;
+
+    // Set header title to quiz topic
+    const headerTitle = document.getElementById('quiz-header-title');
+    if (headerTitle && currentQuiz.title) headerTitle.textContent = currentQuiz.title;
+
     startTimer();
     renderQuestion();
 
-    // Event Bindings
-    const nextBtn = document.getElementById('next-btn');
-    const prevBtn = document.getElementById('prev-btn');
+    // Clue / Hint button
+    document.getElementById('hint-btn').addEventListener('click', () => {
+        const q = currentQuiz.questions[currentIndex];
+        const clue = q.clue || "Think carefully about the topic before choosing.";
+        document.getElementById('clue-text').textContent = clue;
+        document.getElementById('clue-overlay').classList.remove('hidden');
+    });
 
-    nextBtn.addEventListener('click', () => {
-        if (userAnswers[currentQuestionIndex] === null) return;
-
-        if (currentQuestionIndex < currentQuiz.questions.length - 1) {
-            transitionQuestion(() => {
-                currentQuestionIndex++;
-                renderQuestion();
-            });
+    document.getElementById('next-btn').addEventListener('click', () => {
+        if (userAnswers[currentIndex] === null) return;
+        if (currentIndex < currentQuiz.questions.length - 1) {
+            transitionQuestion(() => { currentIndex++; renderQuestion(); });
         } else {
             submitQuiz();
         }
     });
 
-    prevBtn.addEventListener('click', () => {
-        if (currentQuestionIndex > 0) {
-            transitionQuestion(() => {
-                currentQuestionIndex--;
-                renderQuestion();
-            });
+    document.getElementById('prev-btn').addEventListener('click', () => {
+        if (currentIndex > 0) {
+            transitionQuestion(() => { currentIndex--; renderQuestion(); });
         }
     });
 }
 
 function startTimer() {
     secondsElapsed = 0;
-    const timerVal = document.getElementById('timer-val');
+    const el = document.getElementById('timer-val');
     timerInterval = setInterval(() => {
         secondsElapsed++;
-        const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
-        const secs = (secondsElapsed % 60).toString().padStart(2, '0');
-        if (timerVal) timerVal.textContent = `${mins}:${secs}`;
+        const m = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+        const s = (secondsElapsed % 60).toString().padStart(2, '0');
+        if (el) el.textContent = `${m}:${s}`;
     }, 1000);
 }
 
 function renderQuestion() {
-    const q = currentQuiz.questions[currentQuestionIndex];
+    const q = currentQuiz.questions[currentIndex];
     const total = currentQuiz.questions.length;
 
-    // Counter update
-    document.getElementById('question-counter').textContent = `Question ${currentQuestionIndex + 1} of ${total}`;
-    
-    // Progress Bar width percentage
-    const pct = ((currentQuestionIndex) / total) * 100;
+    // "01 Question" style label
+    const label = document.getElementById('question-label');
+    if (label) label.textContent = String(currentIndex + 1).padStart(2, '0') + ' Question';
+
+    // "1 of 5" counter
+    const counter = document.getElementById('question-counter');
+    if (counter) counter.textContent = `${currentIndex + 1} of ${total}`;
+
+    // Progress bar — percentage completed so far (not including current)
+    const pct = (currentIndex / total) * 100;
     document.getElementById('progress-bar').style.width = `${pct}%`;
 
-    // Question
-    const qText = document.getElementById('question-text');
-    qText.textContent = q.question;
+    // Remaining badge on lightbulb
+    const badge = document.getElementById('remaining-badge');
+    if (badge) badge.textContent = total - currentIndex;
 
-    // Options mapping structure
-    const optionsContainer = document.getElementById('options-container');
-    optionsContainer.innerHTML = '';
+    // Question text
+    document.getElementById('question-text').textContent = q.question;
+
+    // Options — 2×2 grid
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
 
     q.options.forEach((opt, idx) => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
-        if (userAnswers[currentQuestionIndex] === opt) {
-            btn.classList.add('selected');
-        }
+        if (userAnswers[currentIndex] === opt) btn.classList.add('selected');
 
-        const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
-        const badge = document.createElement('span');
-        badge.className = 'option-badge';
-        badge.textContent = letters[idx] || (idx + 1);
-
-        const text = document.createElement('span');
-        text.className = 'option-text';
-        text.textContent = opt;
-
-        btn.appendChild(badge);
-        btn.appendChild(text);
+        btn.innerHTML = `<span class="option-letter">${letters[idx] || idx + 1}.</span><span class="option-text">${opt}</span>`;
 
         btn.addEventListener('click', () => {
-            // Uncheck other options
             document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-            
-            // Check active option
             btn.classList.add('selected');
-            userAnswers[currentQuestionIndex] = opt;
-            
-            // Unlock standard controls
+            userAnswers[currentIndex] = opt;
             document.getElementById('next-btn').removeAttribute('disabled');
-            
-            // Micro Interaction Bounce
-            playClickFeedback(btn);
+            // Micro bounce
+            btn.style.transform = 'scale(0.96)';
+            setTimeout(() => { btn.style.transform = ''; }, 130);
         });
 
-        optionsContainer.appendChild(btn);
+        container.appendChild(btn);
     });
 
-    // Control rendering
+    // Prev button visibility
     const prevBtn = document.getElementById('prev-btn');
-    if (currentQuestionIndex === 0) {
-        prevBtn.classList.add('hidden');
-    } else {
-        prevBtn.classList.remove('hidden');
-    }
+    currentIndex === 0 ? prevBtn.classList.add('hidden') : prevBtn.classList.remove('hidden');
 
+    // Next button label
     const nextBtn = document.getElementById('next-btn');
-    if (currentQuestionIndex === total - 1) {
-        nextBtn.innerHTML = `Submit Quiz <i class="fa-solid fa-circle-check"></i>`;
-    } else {
-        nextBtn.innerHTML = `Next Question <i class="fa-solid fa-arrow-right"></i>`;
-    }
+    nextBtn.innerHTML = currentIndex === total - 1
+        ? `Submit <i class="fa-solid fa-circle-check"></i>`
+        : `Next <i class="fa-solid fa-chevron-right"></i>`;
 
-    // Toggle Disabled state depending on choice presence
-    if (userAnswers[currentQuestionIndex] === null) {
-        nextBtn.setAttribute('disabled', 'true');
-    } else {
-        nextBtn.removeAttribute('disabled');
-    }
+    // Lock next if no answer chosen yet
+    userAnswers[currentIndex] === null
+        ? nextBtn.setAttribute('disabled', 'true')
+        : nextBtn.removeAttribute('disabled');
 }
 
-function playClickFeedback(btn) {
-    btn.style.transform = 'scale(0.97) translateX(4px)';
-    setTimeout(() => {
-        btn.style.transform = 'translateX(4px)';
-    }, 150);
-}
-
-function transitionQuestion(updateCallback) {
+function transitionQuestion(cb) {
     const block = document.getElementById('question-block');
-    if (block) {
-        block.classList.add('fade-out');
-        setTimeout(() => {
-            updateCallback();
-            block.classList.remove('fade-out');
-            block.classList.add('fade-in');
-            setTimeout(() => {
-                block.classList.remove('fade-in');
-            }, 300);
-        }, 200);
-    } else {
-        updateCallback();
-    }
+    if (!block) { cb(); return; }
+    block.classList.add('fade-out');
+    setTimeout(() => {
+        cb();
+        block.classList.remove('fade-out');
+        block.classList.add('fade-in');
+        setTimeout(() => block.classList.remove('fade-in'), 250);
+    }, 180);
 }
 
 function submitQuiz() {
     clearInterval(timerInterval);
-    
-    // Compute stats
-    let correctCount = 0;
-    const finalBreakdown = currentQuiz.questions.map((q, idx) => {
-        const userChoice = userAnswers[idx];
-        const isCorrect = (userChoice === q.answer);
-        if (isCorrect) correctCount++;
-        
+
+    let correct = 0;
+    const breakdown = currentQuiz.questions.map((q, i) => {
+        const isCorrect = userAnswers[i] === q.answer;
+        if (isCorrect) correct++;
         return {
             id: q.id,
             question: q.question,
             options: q.options,
-            userAnswer: userChoice,
+            userAnswer: userAnswers[i],
             correctAnswer: q.answer,
-            isCorrect: isCorrect,
+            isCorrect,
             explanation: q.explanation
         };
     });
 
     const total = currentQuiz.questions.length;
-    const pctScore = Math.round((correctCount / total) * 100);
+    const pct = Math.round((correct / total) * 100);
 
-    const scorecard = {
-        title: currentQuiz.title || 'Custom Quiz Topic',
-        score: correctCount,
+    sessionStorage.setItem('quiz_results', JSON.stringify({
+        title: currentQuiz.title || 'Quiz',
+        score: correct,
         totalQuestions: total,
-        percentage: pctScore,
+        percentage: pct,
         timeTaken: secondsElapsed,
-        breakdown: finalBreakdown
-    };
+        breakdown
+    }));
 
-    // Stashing results structure
-    sessionStorage.setItem('quiz_results', JSON.stringify(scorecard));
-    
-    const cardEl = document.getElementById('quiz-card-box');
-    if (cardEl) {
-        cardEl.classList.add('fade-out');
-        setTimeout(() => {
-            window.location.href = '/results';
-        }, 300);
-    } else {
-        window.location.href = '/results';
-    }
+    window.location.href = '/results';
 }
 
 // -------------------------------------------------------------
 // 3. Results Dashboard
 // -------------------------------------------------------------
 function initResults() {
-    const rawResults = sessionStorage.getItem('quiz_results');
-    if (!rawResults) {
-        window.location.href = '/';
-        return;
-    }
+    const raw = sessionStorage.getItem('quiz_results');
+    if (!raw) { window.location.href = '/'; return; }
 
-    const results = JSON.parse(rawResults);
-    
-    // Populate counts and run count-up percentages
+    const results = JSON.parse(raw);
+
+    // Fraction
     document.getElementById('score-fraction').textContent = `${results.score} / ${results.totalQuestions}`;
+
+    // Animated percentage counter
     animatePercentage(results.percentage);
 
-    // Apply Radial gauge stroke offset draw
-    const scoreSvgBar = document.getElementById('score-svg-bar');
-    if (scoreSvgBar) {
-        const offset = 502 - (502 * (results.percentage / 100));
-        setTimeout(() => {
-            scoreSvgBar.style.strokeDashoffset = offset;
-        }, 150);
+    // Radial gauge draw
+    const bar = document.getElementById('score-svg-bar');
+    if (bar) {
+        const offset = 502 - (502 * results.percentage / 100);
+        setTimeout(() => { bar.style.strokeDashoffset = offset; }, 150);
     }
 
-    // Set evaluation words
+    // Evaluation label
     const titleEl = document.getElementById('evaluation-title');
-    const descEl = document.getElementById('evaluation-desc');
+    const descEl  = document.getElementById('evaluation-desc');
+    let title = 'Keep Practicing!';
+    let desc  = 'Every round gets better — review the explanations below!';
 
-    let titleText = "Keep Practicing!";
-    let descText = "Every round gets better. Read the breakdowns below to level up.";
-    
-    if (results.percentage === 100) {
-        titleText = "Flawless Performance!";
-        descText = "Perfect Score! You demonstrated absolute mastery of this subject.";
-    } else if (results.percentage >= 80) {
-        titleText = "Excellent Achievement!";
-        descText = "Awesome! You have a highly comprehensive understanding of the topic.";
-    } else if (results.percentage >= 50) {
-        titleText = "Good Job!";
-        descText = "Nice effort. You understand the most essential concepts.";
-    }
+    if (results.percentage === 100)      { title = 'Flawless! 🎉';       desc = 'Perfect score! You nailed every single question.'; }
+    else if (results.percentage >= 80)   { title = 'Excellent! 🌟';      desc = 'Great work! You have a strong grasp of the topic.'; }
+    else if (results.percentage >= 50)   { title = 'Good Job! 👍';       desc = 'Solid effort — you got the essentials right.'; }
 
-    titleEl.textContent = titleText;
-    descEl.textContent = descText + ` Time taken: ${formatTime(results.timeTaken)}.`;
+    titleEl.textContent = title;
+    descEl.textContent  = desc + `  Time taken: ${formatTime(results.timeTaken)}.`;
 
-    // High Score confetti trigger (>= 80%)
-    if (results.percentage >= 80 && typeof confetti === 'function') {
-        triggerConfettiShower();
-    }
+    // Confetti for high scores
+    if (results.percentage >= 80 && typeof confetti === 'function') triggerConfetti();
 
-    // Render Review cards list
+    // Build review list
     const container = document.getElementById('review-container');
     container.innerHTML = '';
 
-    results.breakdown.forEach((item, index) => {
-        const reviewItem = document.createElement('div');
-        reviewItem.className = `review-item ${item.isCorrect ? 'is-correct' : 'is-incorrect'}`;
-        
-        let answerBlocksHtml = '';
-        if (item.isCorrect) {
-            answerBlocksHtml = `
-                <div class="review-answer-block user-choice-correct">
-                    <strong><i class="fa-solid fa-circle-check"></i> Selected Correctly:</strong> ${item.userAnswer}
-                </div>
-            `;
-        } else {
-            answerBlocksHtml = `
-                <div class="review-answer-block user-choice-incorrect">
-                    <strong><i class="fa-solid fa-circle-xmark"></i> Your Answer:</strong> ${item.userAnswer || 'No Option Selected'}
-                </div>
-                <div class="review-answer-block correct-choice">
-                    <strong><i class="fa-solid fa-circle-check"></i> Correct Answer:</strong> ${item.correctAnswer}
-                </div>
-            `;
-        }
+    results.breakdown.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = `review-item ${item.isCorrect ? 'is-correct' : 'is-incorrect'}`;
 
-        reviewItem.innerHTML = `
+        let answerHtml = item.isCorrect
+            ? `<div class="review-answer-block user-choice-correct">
+                   <strong><i class="fa-solid fa-circle-check"></i> Correct:</strong> ${item.userAnswer}
+               </div>`
+            : `<div class="review-answer-block user-choice-incorrect">
+                   <strong><i class="fa-solid fa-circle-xmark"></i> Your answer:</strong> ${item.userAnswer || 'None'}
+               </div>
+               <div class="review-answer-block correct-choice">
+                   <strong><i class="fa-solid fa-circle-check"></i> Correct:</strong> ${item.correctAnswer}
+               </div>`;
+
+        div.innerHTML = `
             <div class="review-question-header">
-                <span class="review-question-num">Question ${index + 1}</span>
+                <span class="review-question-num">Question ${idx + 1}</span>
                 <span class="review-status-badge ${item.isCorrect ? 'correct-badge' : 'incorrect-badge'}">
                     ${item.isCorrect ? '<i class="fa-solid fa-check"></i> Correct' : '<i class="fa-solid fa-xmark"></i> Incorrect'}
                 </span>
             </div>
             <h3 class="review-question-text">${item.question}</h3>
-            <div class="review-answers-grid">
-                ${answerBlocksHtml}
-            </div>
+            <div class="review-answers-grid">${answerHtml}</div>
             <div class="explanation-box">
-                <div class="explanation-heading"><i class="fa-solid fa-circle-info"></i> Details & Explanation</div>
+                <div class="explanation-heading"><i class="fa-solid fa-circle-info"></i> Explanation</div>
                 <p>${item.explanation}</p>
             </div>
         `;
-
-        container.appendChild(reviewItem);
+        container.appendChild(div);
     });
 
-    // Populate logo-text Header
-    const headerTitle = document.querySelector('.logo-text');
-    if (headerTitle && results.title) {
-        headerTitle.innerHTML = `Mind<span>Spout</span> <span style="font-size: 0.95rem; font-weight: 500; font-family: var(--font-primary); padding: 0.25rem 0.75rem; background: rgba(255,255,255,0.06); border-radius: 20px; margin-left: 0.75rem; border: 1px solid rgba(255,255,255,0.03); color: var(--color-secondary);">${results.title}</span>`;
-    }
-
-    // Reload / Restart button clean states
-    const restartBtn = document.getElementById('restart-btn');
-    if (restartBtn) {
-        restartBtn.addEventListener('click', () => {
-            sessionStorage.removeItem('current_quiz');
-            sessionStorage.removeItem('quiz_results');
-            window.location.href = '/';
-        });
-    }
+    document.getElementById('restart-btn')?.addEventListener('click', () => {
+        sessionStorage.removeItem('current_quiz');
+        sessionStorage.removeItem('quiz_results');
+        window.location.href = '/';
+    });
 }
 
 // -------------------------------------------------------------
-// Helper Animations
+// Helpers
 // -------------------------------------------------------------
-function animatePercentage(targetPct) {
-    const pctEl = document.getElementById('score-percentage');
-    let current = 0;
-    if (targetPct === 0) {
-        pctEl.textContent = '0%';
-        return;
-    }
-    const duration = 1500;
-    const stepTime = Math.max(Math.floor(duration / targetPct), 15);
-    const timer = setInterval(() => {
-        current++;
-        pctEl.textContent = `${current}%`;
-        if (current >= targetPct) {
-            clearInterval(timer);
-        }
-    }, stepTime);
+function animatePercentage(target) {
+    const el = document.getElementById('score-percentage');
+    if (!el) return;
+    let cur = 0;
+    if (target === 0) { el.textContent = '0%'; return; }
+    const step = Math.max(Math.floor(1500 / target), 12);
+    const t = setInterval(() => {
+        cur++;
+        el.textContent = `${cur}%`;
+        if (cur >= target) clearInterval(t);
+    }, step);
 }
 
-function formatTime(secs) {
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
+function formatTime(s) {
+    const m = Math.floor(s / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`;
 }
 
-function triggerConfettiShower() {
-    const duration = 3.5 * 1000;
-    const end = Date.now() + duration;
+function triggerConfetti() {
+    const end = Date.now() + 3500;
+    (function burst() {
+        confetti({ particleCount: 5, angle: 60,  spread: 55, origin: { x: 0, y: 0.8 }, colors: ['#ffd73a', '#ffffff', '#84c4ff'] });
+        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 0.8 }, colors: ['#ffd73a', '#ffffff', '#84c4ff'] });
+        if (Date.now() < end) requestAnimationFrame(burst);
+    })();
+}
 
-    (function frame() {
-        confetti({
-            particleCount: 4,
-            angle: 60,
-            spread: 60,
-            origin: { x: 0, y: 0.8 },
-            colors: ['#a855f7', '#06b6d4', '#4f46e5']
-        });
-        confetti({
-            particleCount: 4,
-            angle: 120,
-            spread: 60,
-            origin: { x: 1, y: 0.8 },
-            colors: ['#a855f7', '#06b6d4', '#4f46e5']
-        });
-
-        if (Date.now() < end) {
-            requestAnimationFrame(frame);
-        }
-    }());
+// Global: called by onclick attribute in quiz.html
+function closeClue() {
+    const overlay = document.getElementById('clue-overlay');
+    if (overlay) overlay.classList.add('hidden');
 }

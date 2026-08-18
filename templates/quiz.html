@@ -3,67 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindSpout - Interactive Quiz</title>
-    <!-- Google Fonts -->
+    <title>MindSpout - Quiz</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- App Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="glow-bg glow-purple"></div>
-    <div class="glow-bg glow-cyan"></div>
+    <div class="app-container animate-slide-up">
 
-    <div class="app-container">
-        <!-- Header -->
-        <header class="main-header animate-fade-in">
-            <div class="logo">
-                <i class="fa-solid fa-brain-circuit brain-icon"></i>
-                <span class="logo-text" id="quiz-header-title">Mind<span>Spout</span></span>
-            </div>
+        <!-- Top Header -->
+        <header class="app-header">
+            <button class="header-btn" id="back-btn" onclick="history.back()">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="header-title" id="quiz-header-title">Quiz</div>
+            <button class="header-btn"><i class="fa-solid fa-border-all"></i></button>
         </header>
 
-        <!-- Quiz Container -->
+        <!-- Metadata Row & Progress -->
+        <div class="metadata-row">
+            <span class="metadata-question" id="question-label">01 Question</span>
+            <span id="question-counter">1 of 5</span>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <!-- Illustration + Timer -->
+        <div class="illustration-timer-row">
+            <div class="illustration-box">
+                <!-- Inline SVG illustration - person reading/studying -->
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="40" cy="40" r="35" fill="rgba(255,255,255,0.08)"/>
+                    <!-- Body -->
+                    <ellipse cx="40" cy="52" rx="14" ry="10" fill="#f4c842"/>
+                    <!-- Head -->
+                    <circle cx="40" cy="32" r="10" fill="#f4c842"/>
+                    <!-- Arms reading a book -->
+                    <rect x="18" y="48" width="16" height="4" rx="2" fill="#e69820" transform="rotate(-15 18 48)"/>
+                    <rect x="46" y="48" width="16" height="4" rx="2" fill="#e69820" transform="rotate(15 46 48)"/>
+                    <!-- Book -->
+                    <rect x="28" y="55" width="24" height="15" rx="3" fill="white" opacity="0.9"/>
+                    <line x1="40" y1="55" x2="40" y2="70" stroke="#7c73e6" stroke-width="1.5"/>
+                    <!-- Eyes -->
+                    <circle cx="36" cy="31" r="2" fill="#7c73e6"/>
+                    <circle cx="44" cy="31" r="2" fill="#7c73e6"/>
+                    <!-- Smile -->
+                    <path d="M36 36 Q40 39 44 36" stroke="#7c73e6" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="timer-pill">
+                <i class="fa-regular fa-clock"></i>
+                <span id="timer-val">00:00</span>
+            </div>
+        </div>
+
+        <!-- Main scrollable area: Question + Options -->
         <main class="main-content">
-            <div class="quiz-card glassmorphic-card animate-slide-up" id="quiz-card-box">
-                <div class="card-glow"></div>
-                
-                <div class="quiz-header">
-                    <span class="question-counter" id="question-counter">Question 1 of 5</span>
-                    <span class="quiz-timer" id="quiz-timer"><i class="fa-solid fa-clock"></i> <span id="timer-val">00:00</span></span>
-                </div>
-
-                <!-- Linear Progress Bar -->
-                <div class="progress-container">
-                    <div class="progress-bar" id="progress-bar"></div>
-                </div>
-
-                <!-- Question Screen -->
-                <div id="question-block" class="animate-fade-in">
-                    <h2 class="question-text" id="question-text">Loading question text...</h2>
-                    
-                    <div class="options-container" id="options-container">
-                        <!-- Options will render dynamically -->
-                    </div>
-                </div>
-
-                <!-- Footer Nav buttons -->
-                <div class="quiz-footer">
-                    <button id="prev-btn" class="btn btn-secondary hidden"><i class="fa-solid fa-arrow-left"></i> Previous</button>
-                    <button id="next-btn" class="btn btn-primary btn-glowing" disabled>Next <i class="fa-solid fa-arrow-right"></i></button>
+            <div id="question-block" class="animate-fade-in">
+                <h2 class="question-text" id="question-text">Loading question...</h2>
+                <span class="choose-label">Choose your answer</span>
+                <div class="options-grid" id="options-container">
+                    <!-- Injected by quiz.js -->
                 </div>
             </div>
         </main>
 
-        <footer class="main-footer">
-            <p>Powered by Llama-3.3-70b-versatile via Groq</p>
+        <!-- Footer Navigation -->
+        <footer class="quiz-footer">
+            <button id="prev-btn" class="footer-btn-nav btn-nav-prev hidden">
+                <i class="fa-solid fa-chevron-left"></i> Previous
+            </button>
+            <button class="help-bulb-btn" id="hint-btn" title="Show clue">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span class="help-bulb-badge" id="remaining-badge">5</span>
+            </button>
+            <button id="next-btn" class="footer-btn-nav btn-nav-next" disabled>
+                Next <i class="fa-solid fa-chevron-right"></i>
+            </button>
         </footer>
     </div>
 
-    <!-- Scripts -->
+    <!-- Clue Modal Overlay -->
+    <div id="clue-overlay" class="clue-overlay hidden" onclick="closeClue()">
+        <div class="clue-modal" onclick="event.stopPropagation()">
+            <div class="clue-modal-header">
+                <span class="clue-modal-icon"><i class="fa-solid fa-lightbulb"></i></span>
+                <span class="clue-modal-title">Clue</span>
+                <button class="clue-close-btn" onclick="closeClue()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="clue-modal-text" id="clue-text">Thinking of a hint...</p>
+        </div>
+    </div>
+
     <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
     <script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
 </body>
